@@ -1,0 +1,4 @@
+requirements.txt
+plain.txt
+.env/
+.venv/
