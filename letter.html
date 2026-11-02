@@ -5,6 +5,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>My Letter ❤️</title>
 <script src="https://cdn.jsdelivr.net/npm/crypto-js@4.1.1/crypto-js.js"></script>
+<script type="text/javascript">
+  (function(c,l,a,r,i,t,y){
+    c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+    t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+    y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+  })(window,document,"clarity","script","z7k79faztb");
+</script>
 <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@500;700&display=swap" rel="stylesheet">
 
 <style>
@@ -191,6 +198,29 @@ if(navigationType==='reload'){sessionStorage.removeItem('pass');window.location.
 if(!sessionStorage.getItem('pass'))window.location.replace('index.html');
 document.getElementById('envelope').addEventListener('keydown',event=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();startExperience();}});
 
+let letterOpened=false;
+let activeReadingMilliseconds=0;
+let readingStartedAt=0;
+
+function resumeReadingTimer(){
+  if(letterOpened&&!readingStartedAt&&document.visibilityState==='visible')readingStartedAt=Date.now();
+}
+
+function saveReadingTime(){
+  if(readingStartedAt){
+    activeReadingMilliseconds+=Date.now()-readingStartedAt;
+    readingStartedAt=0;
+  }
+  const seconds=Math.max(1,Math.round(activeReadingMilliseconds/1000));
+  clarity('set','letter_read_time_seconds',String(seconds));
+}
+
+document.addEventListener('visibilitychange',()=>{
+  if(document.visibilityState==='hidden')saveReadingTime();
+  else resumeReadingTimer();
+});
+window.addEventListener('pagehide',saveReadingTime);
+
 function typeWriter(text, el, speed=28) {
   let i=0; el.innerHTML="";
   function t(){
@@ -207,9 +237,12 @@ async function startExperience(){
   const envelope=document.getElementById('envelope');
   if(!envelope || envelope.classList.contains('opening')) return;
   envelope.classList.add('opening');
+  clarity('event','letter_opened');
   await new Promise(resolve=>setTimeout(resolve,650));
   envelope.remove();
   document.querySelector('.letter').classList.add('visible');
+  letterOpened=true;
+  resumeReadingTimer();
   // document.getElementById('music').play();
 
   const password = sessionStorage.getItem("pass");

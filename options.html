@@ -5,6 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Just for You ❤️</title>
   <script src="https://cdn.jsdelivr.net/npm/crypto-js@4.1.1/crypto-js.js"></script>
+  <script type="text/javascript">
+    (function(c,l,a,r,i,t,y){
+      c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+      t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+      y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+    })(window,document,"clarity","script","z7k79faztb");
+  </script>
   <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@500;700&family=Quicksand:wght@400;600;700&display=swap" rel="stylesheet">
   <style>
     *{box-sizing:border-box}body{margin:0;min-height:100vh;overflow-x:hidden;color:#702d46;font-family:Quicksand,sans-serif;background:radial-gradient(circle at top,#ffd6e0 0%,#f7a8bb 52%,#e989a2 100%);display:grid;place-items:center;padding:24px}.card{width:min(100%,850px);padding:32px;border-radius:28px;text-align:center;background:#fffffff0;border:1px solid #fff;box-shadow:0 20px 60px #8d425436;backdrop-filter:blur(20px);animation:fadeIn .7s ease both}h1{margin:0 0 2px;font-family:"Dancing Script",cursive;font-size:clamp(2.5rem,7vw,4.2rem);color:#9d3f60}.subtitle{margin:0 0 20px;color:#795262}.choice-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}.choice{min-height:230px;padding:24px 18px;border:1px solid #f0cad5;border-radius:20px;background:#fff8fa;color:#702d46;display:flex;flex-direction:column;align-items:center;justify-content:center;text-decoration:none;cursor:pointer;transition:transform .25s,background .25s;font:inherit}.choice:hover{transform:translateY(-6px);background:#ffeef3}.icon{font-size:3rem;line-height:1}.choice h2{font-family:"Dancing Script",cursive;font-size:2rem;margin:13px 0 7px;color:#9d3f60}.choice p{margin:0;line-height:1.45;font-size:.92rem;color:#795262}.now-playing{margin:15px 0 0;font-size:.9rem;color:#795262;min-height:20px}.modal{display:none;position:fixed;inset:0;padding:22px;background:#4e2030a8;z-index:5;place-items:center}.modal.open{display:grid}.modal-content{position:relative;max-width:min(92vw,450px);max-height:90vh;animation:fadeIn .3s ease}.modal img{display:block;width:100%;max-height:82vh;object-fit:contain;border:5px solid #fff;border-radius:18px;box-shadow:0 16px 50px #0006}.close{position:absolute;top:-14px;right:-14px;width:38px;height:38px;border:0;border-radius:50%;background:#df718c;color:#fff;font-size:1.4rem;cursor:pointer}@keyframes fadeIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}@media(max-width:650px){.card{padding:25px 18px}.choice-grid{grid-template-columns:1fr}.choice{min-height:155px}}
@@ -15,7 +22,7 @@
     <h1>Just for you 👀</h1>
     <p class="subtitle">Choose a little surprise, made with love.</p>
     <div class="choice-grid">
-      <a class="choice" href="letter.html"><span class="icon">💌</span><h2>A Letter for You</h2><p>Words from my heart, written especially for you.</p></a>
+      <a class="choice" id="letterChoice" href="letter.html"><span class="icon">💌</span><h2>A Letter for You</h2><p>Words from my heart, written especially for you.</p></a>
       <button class="choice" id="songChoice" type="button"><span class="icon">🎵</span><h2>A Song for You</h2><p>A little melody I dedicate to you. Tap to play.</p></button>
       <button class="choice" id="photoChoice" type="button"><span class="icon">📷</span><h2>Our Cutest Photo</h2><p>One of my favourite memories of us together.</p></button>
     </div>
@@ -28,9 +35,10 @@
     if(navigationType==='reload'){sessionStorage.removeItem('pass');window.location.replace('index.html')}
     if(!sessionStorage.getItem('pass'))window.location.replace('index.html');
     const song=document.getElementById('song'),nowPlaying=document.getElementById('nowPlaying'),modal=document.getElementById('photoModal'),photo=document.getElementById('photo');
-    document.getElementById('songChoice').addEventListener('click',async()=>{if(song.paused){await song.play();nowPlaying.textContent='Now playing your song ♫'}else{song.pause();nowPlaying.textContent='Your song is paused.'}});song.addEventListener('ended',()=>nowPlaying.textContent='Your song has ended ♡');
+    document.getElementById('letterChoice').addEventListener('click',()=>clarity('event','letter_selected'));
+    document.getElementById('songChoice').addEventListener('click',async()=>{if(song.paused){await song.play();clarity('event','song_played');nowPlaying.textContent='Now playing your song ♫'}else{song.pause();nowPlaying.textContent='Your song is paused.'}});song.addEventListener('ended',()=>nowPlaying.textContent='Your song has ended ♡');
     function wordArrayToBytes(wordArray){const bytes=new Uint8Array(wordArray.sigBytes);for(let i=0;i<wordArray.sigBytes;i++)bytes[i]=(wordArray.words[i>>>2]>>>(24-(i%4)*8))&255;return bytes}
-    async function openPhoto(){try{if(!photo.src){const encrypted=await fetch('assets/vh.enc?nocache='+Date.now()).then(response=>{if(!response.ok)throw new Error();return response.text()});const decrypted=CryptoJS.AES.decrypt(encrypted,sessionStorage.getItem('pass'));if(!decrypted.sigBytes)throw new Error();photo.src=URL.createObjectURL(new Blob([wordArrayToBytes(decrypted)],{type:'image/jpeg'}))}modal.classList.add('open')}catch(error){nowPlaying.textContent='Unable to open the photo.'}}
+    async function openPhoto(){try{if(!photo.src){const encrypted=await fetch('assets/vh.enc?nocache='+Date.now()).then(response=>{if(!response.ok)throw new Error();return response.text()});const decrypted=CryptoJS.AES.decrypt(encrypted,sessionStorage.getItem('pass'));if(!decrypted.sigBytes)throw new Error();photo.src=URL.createObjectURL(new Blob([wordArrayToBytes(decrypted)],{type:'image/jpeg'}))}clarity('event','photo_opened');modal.classList.add('open')}catch(error){nowPlaying.textContent='Unable to open the photo.'}}
     document.getElementById('photoChoice').addEventListener('click',openPhoto);document.getElementById('closePhoto').addEventListener('click',()=>modal.classList.remove('open'));modal.addEventListener('click',event=>{if(event.target===modal)modal.classList.remove('open')});document.addEventListener('keydown',event=>{if(event.key==='Escape')modal.classList.remove('open')});
   </script>
 </body>
