@@ -1,99 +1,30 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>For You ❤️</title>
   <script src="https://cdn.jsdelivr.net/npm/crypto-js@4.1.1/crypto-js.js"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@500;700&family=Quicksand:wght@400;600;700&display=swap" rel="stylesheet">
   <style>
-    body {
-      margin: 0;
-      font-family: 'Segoe UI', sans-serif;
-      background: radial-gradient(circle at top, #ff9a9e, #ff4f81);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      overflow: hidden;
-    }
-
-    .card {
-      background: rgba(255,255,255,0.15);
-      backdrop-filter: blur(25px);
-      padding: 28px;
-      border-radius: 25px;
-      width: 90%;
-      max-width: 380px;
-      text-align: center;
-      color: white;
-      box-shadow: 0 20px 60px rgba(0,0,0,0.25);
-      animation: fadeIn 1.2s ease;
-    }
-
-    h1 { font-size: 1.9rem; }
-    p { opacity: 0.9; }
-
-    input, button {
-      width: 100%;
-      padding: 12px;
-      border-radius: 14px;
-      border: none;
-      margin-top: 15px;
-      font-size: 16px;
-    }
-
-    button {
-      background: linear-gradient(135deg,#ff2e63,#ff6a88);
-      color: white;
-      transition: 0.3s;
-    }
-
-    button:hover { transform: scale(1.05); }
-
-    @keyframes fadeIn {
-      from {opacity:0; transform: translateY(20px);} 
-      to {opacity:1; transform: translateY(0);} 
-    }
-
-    .heart {
-      position: absolute;
-      animation: float 6s linear infinite;
-      opacity: 0.7;
-    }
-
-    @keyframes float {
-      from { transform: translateY(100vh); }
-      to { transform: translateY(-10vh); }
-    }
+    *{box-sizing:border-box}body{margin:0;min-height:100vh;overflow:hidden;color:#702d46;font-family:Quicksand,sans-serif;background:radial-gradient(circle at top,#ffd6e0 0%,#f7a8bb 52%,#e989a2 100%);display:grid;place-items:center;padding:24px}.card{width:min(100%,430px);padding:34px 30px;border-radius:28px;text-align:center;background:#fffffff0;border:1px solid #fff;box-shadow:0 20px 60px #8d425436;backdrop-filter:blur(20px);animation:fadeIn .7s ease both}h1{margin:0 0 8px;font-family:"Dancing Script",cursive;font-size:clamp(2.7rem,10vw,4rem);color:#9d3f60}p{margin:0;color:#795262;font-size:1.05rem}.unlock{margin-top:26px}input,button{width:100%;border:0;border-radius:14px;padding:13px 15px;font:inherit;font-size:1rem}input{background:#fff;color:#7a4051;outline:none;border:1px solid #f0cad5}button{margin-top:12px;background:linear-gradient(135deg,#df718c,#efa0b1);color:#fff;font-weight:700;cursor:pointer;box-shadow:0 7px 18px #8d425440;transition:transform .2s}button:hover{transform:translateY(-2px)}.error{min-height:20px;margin:10px 0 0;color:#b34b68;font-size:.9rem}@keyframes fadeIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
   </style>
 </head>
 <body>
-
-  <div class="card">
+  <main class="card">
     <h1>💌 A Message For You</h1>
     <p>Some things are meant only for you...</p>
-    <input type="password" id="password" placeholder="Enter your secret code ❤️">
-    <button onclick="goToLetter()">Unlock ❤️</button>
-  </div>
-
+    <div class="unlock">
+      <input type="password" id="password" placeholder="Enter your secret code" autocomplete="off">
+      <button id="unlockButton" type="button">Unlock</button>
+      <p class="error" id="error" aria-live="polite"></p>
+    </div>
+  </main>
   <script>
-    function goToLetter() {
-      const password = document.getElementById('password').value;
-      if(!password) return alert("Enter the secret code ❤️");
-      sessionStorage.setItem("pass", password);
-      window.location.href = "letter.html";
-    }
-
-    setInterval(() => {
-      const heart = document.createElement("div");
-      heart.className = "heart";
-      heart.innerText = "❤️";
-      heart.style.left = Math.random()*100+"vw";
-      heart.style.fontSize = (Math.random()*20+15)+"px";
-      document.body.appendChild(heart);
-      setTimeout(()=>heart.remove(),6000);
-    }, 300);
+    const passwordInput=document.getElementById('password'),error=document.getElementById('error'),unlockButton=document.getElementById('unlockButton');
+    async function unlock(){const password=passwordInput.value;if(!password){error.textContent='Enter the secret code ❤️';return}unlockButton.disabled=true;unlockButton.textContent='Checking...';try{const response=await fetch('encrypted.txt?nocache='+Date.now()),encrypted=await response.text(),decrypted=CryptoJS.AES.decrypt(encrypted,password).toString(CryptoJS.enc.Utf8);if(!decrypted)throw new Error('Incorrect password');sessionStorage.setItem('pass',password);window.location.href='options.html'}catch(error){document.getElementById('error').textContent="That isn't the secret code. Try again ❤️";unlockButton.disabled=false;unlockButton.textContent='Unlock ❤️'}}
+    unlockButton.addEventListener('click',unlock);passwordInput.addEventListener('keydown',event=>{if(event.key==='Enter')unlock()});
+    window.addEventListener('pageshow',()=>{passwordInput.value='';error.textContent='';unlockButton.disabled=false;unlockButton.textContent='Unlock ❤️';});
   </script>
 </body>
 </html>

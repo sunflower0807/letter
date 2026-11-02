@@ -1,53 +1,43 @@
-import base64
-from Crypto.Cipher import AES
-from Crypto.Random import get_random_bytes
-from hashlib import md5
+import subprocess
 import sys
 
 
-def evp_kdf(password, salt, key_size=32, iv_size=16):
-    d = b''
-    last = b''
-    while len(d) < key_size + iv_size:
-        last = md5(last + password.encode() + salt).digest()
-        d += last
-    return d[:key_size], d[key_size:key_size+iv_size]
-
-
-def encrypt_text(text, password):
-    salt = get_random_bytes(8)
-    key, iv = evp_kdf(password, salt)
-
-    cipher = AES.new(key, AES.MODE_CBC, iv)
-
-    data = text.encode('utf-8')
-    pad_len = 16 - (len(data) % 16)
-    padded_data = data + bytes([pad_len] * pad_len)
-
-    ciphertext = cipher.encrypt(padded_data)
-
-    encrypted = b"Salted__" + salt + ciphertext
-
-    return base64.b64encode(encrypted).decode()
+def encrypt_file(password, input_file, output_file):
+    """Encrypt any file in the salted AES format CryptoJS can decrypt."""
+    subprocess.run(
+        [
+            "openssl",
+            "enc",
+            "-aes-256-cbc",
+            "-salt",
+            "-md",
+            "md5",
+            "-a",
+            "-A",
+            "-in",
+            input_file,
+            "-out",
+            output_file,
+            "-pass",
+            f"pass:{password}",
+        ],
+        check=True,
+    )
 
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
-        print("Usage: python encrypt.py <password>")
+        print("Usage: python encrypt.py <password> [input_file] [output_file]")
         sys.exit(1)
 
     password = sys.argv[1]
+    input_file = sys.argv[2] if len(sys.argv) > 2 else "plain.txt"
+    output_file = sys.argv[3] if len(sys.argv) > 3 else "encrypted.txt"
 
     try:
-        with open("plain.txt", "r", encoding="utf-8") as f:
-            text = f.read()
-    except FileNotFoundError:
-        print("❌ plain.txt not found")
+        encrypt_file(password, input_file, output_file)
+    except (FileNotFoundError, subprocess.CalledProcessError) as error:
+        print(f"❌ Encryption failed: {error}")
         sys.exit(1)
 
-    encrypted_text = encrypt_text(text, password)
-
-    with open("encrypted.txt", "w", encoding="utf-8") as f:
-        f.write(encrypted_text)
-
-    print("💌 Encrypted successfully → encrypted.txt")
+    print(f"💌 Encrypted successfully → {output_file}")

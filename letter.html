@@ -11,7 +11,7 @@
 body {
   margin:0;
   min-height:100vh;
-  background: radial-gradient(circle at top,#fff0f5,#ffd6e0);
+  background: radial-gradient(circle at top,#fff5f7,#fbdde4);
   display:flex;
   justify-content:center;
   align-items:center;
@@ -19,49 +19,151 @@ body {
 }
 
 .letter {
+  display:none;
   width:100%;
-  max-width:700px;
-  background: linear-gradient(180deg,#fff,#fff5f8);
+  max-width:780px;
+  background:linear-gradient(180deg,#fff,#fff8fa);
+  border:1px solid #f3d5dc;
   border-radius:25px;
-  padding:25px;
-  box-shadow:0 20px 60px rgba(0,0,0,0.2);
+  padding:32px;
+  box-shadow:0 20px 60px rgba(134,59,79,0.14);
   font-family:'Dancing Script',cursive;
-  font-size:1.3rem;
+  font-size:1.38rem;
   line-height:1.9;
   color:#5a2a2a;
 }
 
+.letter.visible {
+  display:block;
+  animation:revealLetter .55s ease both;
+}
+
+@keyframes revealLetter {
+  from { opacity:0; transform:translateY(18px); }
+  to { opacity:1; transform:translateY(0); }
+}
+
 h2 {
   text-align:center;
-  color:#ff2e63;
+  color:#df718c;
 }
 
 #content {
   margin-top:15px;
   white-space:pre-wrap;
-}
-
-.sparkle {
-  position: fixed;
-  width:5px;
-  height:5px;
-  background:white;
-  border-radius:50%;
-  animation: sparkle 2s linear infinite;
-}
-
-@keyframes sparkle {
-  from {opacity:1; transform:translateY(0);} 
-  to {opacity:0; transform:translateY(-50px);} 
+  font-family:Georgia, 'Times New Roman', serif;
+  font-size:1.34rem;
+  font-weight:400;
+  line-height:1.9;
+  letter-spacing:.01em;
+  color:#4d292d;
 }
 
 .tap {
   position:fixed;
-  bottom:20px;
-  background:#ff2e63;
-  color:white;
-  padding:10px 15px;
-  border-radius:20px;
+  left:50%;
+  top:50%;
+  margin-left:-105px;
+  margin-top:-66px;
+  width:210px;
+  height:132px;
+  cursor:pointer;
+  perspective:700px;
+  filter:drop-shadow(0 12px 12px rgba(134,59,79,.2));
+}
+
+.envelope-body {
+  position:absolute;
+  inset:20px 0 0;
+  overflow:hidden;
+  border-radius:4px;
+  background:#f3aabc;
+}
+
+.envelope-body::before,
+.envelope-body::after {
+  content:'';
+  position:absolute;
+  bottom:-1px;
+  width:0;
+  height:0;
+  border-style:solid;
+}
+
+.envelope-body::before {
+  left:0;
+  border-width:56px 105px 0 0;
+  border-color:#e993aa transparent transparent transparent;
+}
+
+.envelope-body::after {
+  right:0;
+  border-width:0 105px 56px 0;
+  border-color:transparent #f7bdca transparent transparent;
+}
+
+.envelope-flap {
+  position:absolute;
+  z-index:3;
+  top:20px;
+  width:0;
+  height:0;
+  border-left:105px solid transparent;
+  border-right:105px solid transparent;
+  border-top:67px solid #df718c;
+  transform-origin:top;
+  transition:transform .55s ease;
+}
+
+.envelope-note {
+  position:absolute;
+  z-index:2;
+  top:32px;
+  left:18px;
+  width:174px;
+  height:80px;
+  padding-top:17px;
+  border-radius:3px;
+  background:#fffafc;
+  color:#b85370;
+  font-family:'Dancing Script',cursive;
+  font-size:1.25rem;
+  text-align:center;
+  transition:transform .55s ease .08s;
+}
+
+.tap:hover .envelope-note { transform:translateY(-7px); }
+.tap.opening .envelope-flap { transform:rotateX(180deg); }
+.tap.opening .envelope-note { transform:translateY(-52px); }
+
+.tap-hint {
+  position:absolute;
+  z-index:4;
+  bottom:-25px;
+  width:100%;
+  color:#b85370;
+  font:600 .78rem Arial,sans-serif;
+  letter-spacing:.04em;
+  text-align:center;
+}
+
+@media (max-width:600px) {
+  body { padding:12px; align-items:center; }
+
+  .letter {
+    padding:20px;
+    border-radius:18px;
+    font-size:1.12rem;
+    line-height:1.75;
+  }
+
+  h2 { margin:0; font-size:1.7rem; }
+
+  #content { margin-top:10px; }
+
+  #content { font-size:1.16rem; line-height:1.8; }
+
+  .tap { transform:scale(.9); }
 }
 </style>
 </head>
@@ -72,19 +174,29 @@ h2 {
 </audio> -->
 
 <div class="letter">
-  <h2>❤️ For You ❤️</h2>
+  <h2>For You ❤️</h2>
   <div id="content">Tap below to begin...</div>
 </div>
 
-<div class="tap" onclick="startExperience()">Tap to open 💖</div>
+<div class="tap" id="envelope" role="button" tabindex="0" aria-label="Tap to open the letter" onclick="startExperience()">
+  <div class="envelope-note">For you</div>
+  <div class="envelope-body"></div>
+  <div class="envelope-flap"></div>
+  <div class="tap-hint">TAP TO OPEN</div>
+</div>
 
 <script>
+const navigationType=performance.getEntriesByType('navigation')[0]?.type;
+if(navigationType==='reload'){sessionStorage.removeItem('pass');window.location.replace('index.html');}
+if(!sessionStorage.getItem('pass'))window.location.replace('index.html');
+document.getElementById('envelope').addEventListener('keydown',event=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();startExperience();}});
+
 function typeWriter(text, el, speed=28) {
   let i=0; el.innerHTML="";
   function t(){
     if(i<text.length){
       el.innerHTML += text.charAt(i);
-      el.style.textShadow = "0 0 8px rgba(255,105,180,0.6)";
+      el.style.textShadow = "0 0 8px rgba(242,150,172,0.35)";
       i++; setTimeout(t,speed);
     }
   }
@@ -92,7 +204,12 @@ function typeWriter(text, el, speed=28) {
 }
 
 async function startExperience(){
-  document.querySelector('.tap').remove();
+  const envelope=document.getElementById('envelope');
+  if(!envelope || envelope.classList.contains('opening')) return;
+  envelope.classList.add('opening');
+  await new Promise(resolve=>setTimeout(resolve,650));
+  envelope.remove();
+  document.querySelector('.letter').classList.add('visible');
   // document.getElementById('music').play();
 
   const password = sessionStorage.getItem("pass");
@@ -108,15 +225,6 @@ async function startExperience(){
     el.innerHTML="💔 Some things stay locked... maybe it wasn't the right code.";
   }
 
-  // sparkles
-  setInterval(()=>{
-    const s=document.createElement('div');
-    s.className='sparkle';
-    s.style.left=Math.random()*100+'vw';
-    s.style.bottom='0px';
-    document.body.appendChild(s);
-    setTimeout(()=>s.remove(),2000);
-  },200);
 }
 </script>
 

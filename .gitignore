@@ -3,3 +3,4 @@ plain.txt
 .env/
 .venv/
 temp.txt
+.DS_Store
