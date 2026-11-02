@@ -1,120 +1,124 @@
-
-<!-- letter.html improved -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>My Letter ❤️</title>
-  <script src="https://cdn.jsdelivr.net/npm/crypto-js@4.1.1/crypto-js.js"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@500;700&display=swap" rel="stylesheet">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Letter ❤️</title>
+<script src="https://cdn.jsdelivr.net/npm/crypto-js@4.1.1/crypto-js.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@500;700&display=swap" rel="stylesheet">
 
-  <style>
-    body {
-      margin: 0;
-      min-height: 100vh;
-      background: linear-gradient(180deg, #fff1f5, #ffe4ec);
-      display: flex;
-      flex-direction: column;
-      justify-content: flex-start;
-      align-items: center;
-      padding: 20px;
-    }
+<style>
+body {
+  margin:0;
+  min-height:100vh;
+  background: radial-gradient(circle at top,#fff0f5,#ffd6e0);
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  padding:15px;
+}
 
-    .letter {
-      width: 100%;
-      max-width: 700px;
-      background: #f9eaf7;
-      border-radius: 20px;
-      padding: 25px 20px;
-      box-shadow: 0 15px 40px rgba(0,0,0,0.15);
-      font-family: 'Dancing Script', cursive;
-      font-size: 1.3rem;
-      line-height: 1.9;
-      color: #5a2a2a;
-      animation: fadeIn 1s ease;
-    }
+.letter {
+  width:100%;
+  max-width:700px;
+  background: linear-gradient(180deg,#fff,#fff5f8);
+  border-radius:25px;
+  padding:25px;
+  box-shadow:0 20px 60px rgba(0,0,0,0.2);
+  font-family:'Dancing Script',cursive;
+  font-size:1.3rem;
+  line-height:1.9;
+  color:#5a2a2a;
+}
 
-    h2 {
-      text-align: center;
-      color: #ff2e63;
-      margin-bottom: 10px;
-    }
+h2 {
+  text-align:center;
+  color:#ff2e63;
+}
 
-    #content {
-      margin-top: 15px;
-      white-space: pre-wrap;
-    }
+#content {
+  margin-top:15px;
+  white-space:pre-wrap;
+}
 
-    .error {
-      text-align: center;
-      color: #ff2e63;
-      font-family: sans-serif;
-    }
+.sparkle {
+  position: fixed;
+  width:5px;
+  height:5px;
+  background:white;
+  border-radius:50%;
+  animation: sparkle 2s linear infinite;
+}
 
-    @keyframes fadeIn {
-      from {opacity:0; transform: translateY(20px);} 
-      to {opacity:1; transform: translateY(0);} 
-    }
+@keyframes sparkle {
+  from {opacity:1; transform:translateY(0);} 
+  to {opacity:0; transform:translateY(-50px);} 
+}
 
-    @media (max-width: 480px) {
-      .letter {
-        font-size: 1.15rem;
-        padding: 20px 15px;
-      }
-    }
-  </style>
+.tap {
+  position:fixed;
+  bottom:20px;
+  background:#ff2e63;
+  color:white;
+  padding:10px 15px;
+  border-radius:20px;
+}
+</style>
 </head>
 <body>
 
-  <!-- softer romantic instrumental -->
-  <audio autoplay loop>
-    <source src="https://www.bensound.com/bensound-music/bensound-romantic.mp3" type="audio/mpeg">
-  </audio>
+<!-- <audio id="music" loop>
+  <source src="music.mp3" type="audio/mpeg">
+</audio> -->
 
-  <div class="letter">
-    <h2>❤️ For You ❤️</h2>
-    <div id="content">Unlocking your letter...</div>
-  </div>
+<div class="letter">
+  <h2>❤️ For You ❤️</h2>
+  <div id="content">Tap below to begin...</div>
+</div>
 
-  <script>
-    function typeWriter(text, element, speed=100) {
-      let i = 0;
-      element.innerHTML = "";
-      function typing() {
-        if (i < text.length) {
-          element.innerHTML += text.charAt(i);
-          i++;
-          setTimeout(typing, speed);
-        }
-      }
-      typing();
+<div class="tap" onclick="startExperience()">Tap to open 💖</div>
+
+<script>
+function typeWriter(text, el, speed=28) {
+  let i=0; el.innerHTML="";
+  function t(){
+    if(i<text.length){
+      el.innerHTML += text.charAt(i);
+      el.style.textShadow = "0 0 8px rgba(255,105,180,0.6)";
+      i++; setTimeout(t,speed);
     }
+  }
+  t();
+}
 
-    async function loadLetter() {
-      const password = sessionStorage.getItem("pass");
-      const el = document.getElementById("content");
+async function startExperience(){
+  document.querySelector('.tap').remove();
+  // document.getElementById('music').play();
 
-      try {
-        const response = await fetch('encrypted.txt?nocache=' + new Date().getTime());
-        const encrypted = await response.text();
+  const password = sessionStorage.getItem("pass");
+  const el = document.getElementById("content");
 
-        const decrypted = CryptoJS.AES.decrypt(encrypted, password)
-          .toString(CryptoJS.enc.Utf8);
+  try{
+    const res = await fetch('encrypted.txt?nocache='+Date.now());
+    const enc = await res.text();
+    const dec = CryptoJS.AES.decrypt(enc,password).toString(CryptoJS.enc.Utf8);
+    if(!dec) throw new Error();
+    typeWriter(dec,el);
+  }catch{
+    el.innerHTML="💔 Some things stay locked... maybe it wasn't the right code.";
+  }
 
-        if (!decrypted) throw new Error();
+  // sparkles
+  setInterval(()=>{
+    const s=document.createElement('div');
+    s.className='sparkle';
+    s.style.left=Math.random()*100+'vw';
+    s.style.bottom='0px';
+    document.body.appendChild(s);
+    setTimeout(()=>s.remove(),2000);
+  },200);
+}
+</script>
 
-        typeWriter(decrypted, el);
-
-      } catch {
-        el.innerHTML = "💔 Maybe this wasn’t the right moment... or the code didn’t match what my heart remembers.";
-        el.classList.add("error");
-      }
-    }
-
-    loadLetter();
-  </script>
 </body>
 </html>
-
-
